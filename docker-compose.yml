@@ -1,4 +1,4 @@
-version: "2"
+version: "3.9"
 services:
     www:
         build: .
@@ -7,36 +7,32 @@ services:
         volumes:
             - ./www:/var/www/html/
         links:
-            - db
+            - postgres
         networks:
             - default
         depends_on:
-            - db
-    db:
-        image: mysql:5.7.13
-        ports: 
-            - "3306:3306"
+            - postgres
+    postgres:
+        image: postgres:latest
+        container_name: postgres_container
         environment:
-            MYSQL_DATABASE: myDb
-            MYSQL_USER: user
-            MYSQL_PASSWORD: test
-            MYSQL_ROOT_PASSWORD: test
-        volumes:
-            - ./dump:/docker-entrypoint-initdb.d
-            - persistent:/var/lib/mysql
-        networks:
-            - default
-    phpmyadmin:
-        image: phpmyadmin
-        links: 
-            - db:db
+            POSTGRES_USER: postgres_user
+            POSTGRES_PASSWORD: postgres_password
+            POSTGRES_DB: postgres_db
+            PGDATA: /var/lib/postgresql/data
         ports:
-            - 8000:80
-        environment:
-            MYSQL_USER: user
-            MYSQL_PASSWORD: test
-            MYSQL_ROOT_PASSWORD: test
-
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres_user -d postgres_db"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+        restart: unless-stopped
+        tty: true
+        stdin_open: true
             
 volumes:
-    persistent:
+    postgres_data:
+    driver: local
