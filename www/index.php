@@ -2,9 +2,7 @@
 
 <html>
  <head>
-  <title>Hello...</title>
-
-  <!-- <meta charset="utf-8">  -->
+  <title>Hello... PostgreSQL</title>
 
   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
@@ -13,40 +11,45 @@
 </head>
 <body>
     <div class="container">
-        <h1>Hi! I'm happy</h1>
-
+        <h1>Hi! I'm happy with PostgreSQL!</h1>
 
     <?php
-    $conn = mysqli_connect('db', 'user', 'test', 'myDb');
+    $conn = pg_connect("host=postgres user=postgres_user password=postgres_password dbname=postgres_db");
 
-    if (mysqli_connect_errno()) {
-      echo "Failed to connect to MySQL: " . mysqli_connect_error();
+    if (!$conn) {
+      echo "<div class='alert alert-danger'>Failed to connect to PostgreSQL: " . pg_last_error() . "</div>";
       exit();
     }
 
-    echo("hhh");
+    echo "<div class='alert alert-success'>Connected to PostgreSQL!</div>";
 
-    $query = "SELECT * From Person";
-    $result = mysqli_query($conn, $query);
+    $query = "SELECT * FROM Person ORDER BY id";
+    $result = pg_query($conn, $query);
 
-    echo '<table class="table table-striped">';
-    echo '<thead><tr><th></th><th>id</th><th>name</th></tr></thead>';
-    while($value = $result->fetch_array())
-    {
-        echo '<tr>';
-        echo '<td><a href="#"><span class="glyphicon glyphicon-search"></span></a></td>';
-        foreach($value as $element){
-            echo '<td>' . $element . '</td>';
+    if (!$result) {
+        echo "<div class='alert alert-danger'>Query failed: " . pg_last_error($conn) . "</div>";
+    } else {
+        echo '<table class="table table-striped">';
+        echo '<thead>';
+        echo '<tr><th></th><th>id</th><th>name</th></tr>';
+        echo '</thead>';
+        echo '<tbody>';
+        
+        while ($row = pg_fetch_assoc($result)) {
+            echo '<tr>';
+            echo '<td><a href="#"><span class="glyphicon glyphicon-search"></span></a></td>';
+            echo '<td>' . htmlspecialchars($row['id']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['name']) . '</td>';
+            echo '</tr>';
         }
-
-        echo '</tr>';
+        
+        echo '</tbody>';
+        echo '</table>';
+        
+        pg_free_result($result);
     }
-    echo '</table>';
 
-    $result->close();
-
-    mysqli_close($conn);
-
+    pg_close($conn);
     ?>
     </div>
 </body>
