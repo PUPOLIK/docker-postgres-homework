@@ -1,4 +1,3 @@
-version: "3.9"
 services:
     www:
         build: .
@@ -6,34 +5,20 @@ services:
             - "8001:80"
         volumes:
             - ./www:/var/www/html/
-        links:
-            - postgres
-        networks:
-            - default
         depends_on:
             - postgres
+
     postgres:
         image: postgres:latest
-        container_name: postgres_container
         environment:
             POSTGRES_USER: postgres_user
             POSTGRES_PASSWORD: postgres_password
             POSTGRES_DB: postgres_db
-            PGDATA: /var/lib/postgresql/data
         ports:
             - "5432:5432"
         volumes:
             - ./dump:/docker-entrypoint-initdb.d
             - postgres_data:/var/lib/postgresql/data
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U postgres_user -d postgres_db"]
-            interval: 30s
-            timeout: 10s
-            retries: 5
-        restart: unless-stopped
-        tty: true
-        stdin_open: true
-            
+
 volumes:
     postgres_data:
-
