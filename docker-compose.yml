@@ -1,15 +1,5 @@
 version: "3.9"
 services:
-    www:
-        build: .
-        ports: 
-            - "8001:80"
-        volumes:
-            - ./www:/var/www/html/
-        depends_on:
-            - db
-            - postgres
-
     db:
         image: mysql:5.7
         container_name: mysql_container
@@ -48,7 +38,17 @@ services:
         volumes:
             - ./pg_dump:/docker-entrypoint-initdb.d
             - postgres_data:/var/lib/postgresql/data
+    www:
+        build: .
+        ports: 
+            - "8001:80"
+        volumes:
+            - ./www:/var/www/html/
+        depends_on:
+            - db
+            - postgres
 
 volumes:
     mysql_data:
-    postgres_data:
+    postgres_data:
+
